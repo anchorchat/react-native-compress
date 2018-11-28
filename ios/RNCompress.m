@@ -52,11 +52,9 @@ RCT_EXPORT_METHOD(compressVideo:(NSString *)filePath byQuality:(NSString*)compre
 
     [exportSession exportAsynchronouslyWithCompletionHandler:^(void) {
       if (exportSession.status == AVAssetExportSessionStatusCompleted) {
-        if (resolve) {
-          resolve(@"path": outputFilePath });
-        }
+        resolve(outputFilePath);
       } else {
-        if (reject) reject(@"Cannot compress video", nil, nil);
+        reject(@"Cannot compress video", nil, nil);
       }
     }];
   } @catch(NSException *e) {
