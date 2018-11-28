@@ -17,7 +17,13 @@ RCT_EXPORT_METHOD(compressVideo:(NSString *)filePath byQuality:(NSString*)compre
   @try {
     filePath = [filePath stringByReplacingOccurrencesOfString:@"file://"
                                                        withString:@""];
+
+    if (![[NSFileManager defaultManager]fileExistsAtPath:filePath isDirectory:NO]) {
+      return reject(@"File does not exist", nil, nil);
+    }
+
     NSString *preset = nil;
+
     if (compressQuality == nil || [compressQuality isEqualToString:@"medium"]) {
       preset = AVAssetExportPresetMediumQuality;
     } else if ([compressQuality isEqualToString:@"high"]) {
@@ -28,16 +34,16 @@ RCT_EXPORT_METHOD(compressVideo:(NSString *)filePath byQuality:(NSString*)compre
       preset = AVAssetExportPresetMediumQuality;
     }
 
-    // save to temp directory
-    NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory,
+    NSString* tmpDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory,
                                                                    NSUserDomainMask,
                                                                    YES) lastObject];
-    NSString *outputFilePath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"%@.mp4", [[NSProcessInfo processInfo] globallyUniqueString]]];
+    NSString *outputFilePath = [tmpDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"%@.mp4", [[NSProcessInfo processInfo] globallyUniqueString]]];
 
     NSURL* inputURL = [NSURL fileURLWithPath:filePath];
     NSURL* outputURL = [NSURL fileURLWithPath:outputFilePath];
 
     [[NSFileManager defaultManager] removeItemAtURL:outputURL error:nil];
+
     AVURLAsset *asset = [AVURLAsset URLAssetWithURL:inputURL options:nil];
     AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:preset];
     exportSession.shouldOptimizeForNetworkUse = YES;
